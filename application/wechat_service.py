@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request
 from .utils.util import *
-
+import json
 
 app = Flask(__name__)
 
@@ -9,8 +9,8 @@ def message():
   """ 
   Service entrance 
   args:
-    {'recipient' : ['email1','email2'], 'msg' : 'message'}
-    recipient : optional, missing recipient, default to all
+    {'recipients' : ['email1','email2'], 'msg' : 'message'}
+    recipients : optional, missing recipients, default to all
     msg : must
   returns:
     The parameter must contain msg field. else return {'errmsg':'missing msg in parameters'}
@@ -22,7 +22,7 @@ def message():
   params = request.get_json(force=True,silent=True)
   if not params or not 'msg' in params:
     return jsonify({'errmsg':'missing msg in parameters'}), 400
-  user_email = params['recipient']
+  user_email = params['recipients']
   if user_email:
     usersID, exist_user_email = get_userID(user_email)
   else:
@@ -36,6 +36,9 @@ def message():
     }
     return jsonify(error), 400
 
-  params['recipient'] = usersID
-  send_wechat(params)
+  params['recipients'] = usersID
+  result = json.loads(send_wechat(params))
+  if result.get('errcode') != 0:
+    return jsonify({'msg':'failure'}), 400
+
   return jsonify({'msg':'success'}), 201
