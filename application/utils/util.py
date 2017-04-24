@@ -45,7 +45,7 @@ def send_wechat(params):
   """ wechat invoke interface """
   url="https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token="+get_token()
   values ={
-    "touser": params['touser'],
+    "touser": params['recipient'],
     "msgtype": "text",
     "agentid": param['wechat']['agentid'],
     "text": {
@@ -61,8 +61,9 @@ def send_wechat(params):
 def get_token():
   """ get token """
   url='https://qyapi.weixin.qq.com/cgi-bin/gettoken'
-  values = {'corpid' : param['wechat']['corpid'],
-      'corpsecret': param['wechat']['corpsecret'],
+  values = {
+    'corpid' : param['wechat']['corpid'],
+    'corpsecret': param['wechat']['corpsecret']
   }
   re = req.post(url, params=values)
   data = json.loads(re.text)
