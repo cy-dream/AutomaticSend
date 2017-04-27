@@ -1,15 +1,13 @@
-from flask import Flask, jsonify, request
-import requests as req
 import json
 import yaml
 import pymongo
+import requests as req
 
 
-app = Flask(__name__)
-
-with open('wechat_msg.yml') as ya:
-  param = yaml.load(ya)
+with open('application/utils/wechat_msg.yml') as config:
+  param = yaml.load(config)
   mongo = param['mongo']
+
 
 user_information = (mongo['host'], mongo['database'])
 
@@ -47,7 +45,7 @@ def send_wechat(params):
   """ wechat invoke interface """
   url="https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token="+get_token()
   values ={
-    "touser": params['touser'],
+    "touser": params['recipient'],
     "msgtype": "text",
     "agentid": param['wechat']['agentid'],
     "text": {
@@ -63,34 +61,10 @@ def send_wechat(params):
 def get_token():
   """ get token """
   url='https://qyapi.weixin.qq.com/cgi-bin/gettoken'
-  values = {'corpid' : 'wx5ca89ffbd7dae3cc',
-      'corpsecret': param['wechat']['corpsecret'],
+  values = {
+    'corpid' : param['wechat']['corpid'],
+    'corpsecret': param['wechat']['corpsecret']
   }
   re = req.post(url, params=values)
   data = json.loads(re.text)
   return data["access_token"]
-
-
-@app.route('/message', methods=['POST'])
-def create_message_task():
-  """ Service entrance 
-      The parameter must contain msg field. else return {'errmsg':'Missing parameters'}
-      return { "errcode": 0, "errmsg": "ok", "invaliduser": "user_email_list"}
-   """
-  params = request.get_json(force=True,silent=True)
-  if not params or not 'msg' in params:
-    return jsonify({'errmsg':'Missing parameters'}), 400
-  user_email = params['touser']
-  if user_email:
-    usersID, exist_user_email = get_userID(user_email)
-  else:
-    usersID = '@all'
-  not_exist_user_email = list(set(user_email).difference(exist_user_email))
-  params['touser'] = usersID
-  text = json.loads(send_wechat(params))
-  if not_exist_user_email:
-    text['invaliduser'] = not_exist_user_email
-  return jsonify(text), 201
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0')
