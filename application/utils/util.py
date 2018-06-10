@@ -4,7 +4,7 @@ import pymongo
 import requests as req
 
 
-with open('application/utils/wechat_msg.yml') as config:
+with open('wechat_msg.yml') as config:
   param = yaml.load(config)
   mongo = param['mongo']
 
@@ -45,7 +45,7 @@ def send_wechat(params):
   """ wechat invoke interface """
   url="https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token="+get_token()
   values ={
-    "touser": params['recipient'],
+    "touser": params['recipients'],
     "msgtype": "text",
     "agentid": param['wechat']['agentid'],
     "text": {

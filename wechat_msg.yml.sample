@@ -7,3 +7,8 @@ mongo:
   host: 'localhost'
   database: 'staff'
   collection: 'information'
+
+recipients:
+  all: '@all'
+  cydream: 'cydream'
+  baimengsi: 'BaiMengSi'
